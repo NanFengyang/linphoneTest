@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black">
+
+    <ImageView
+        android:id="@+id/imageview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@mipmap/screen" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:orientation="vertical"
+        android:padding="30dp">
+
+        <EditText
+            android:id="@+id/iput_username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="请输入您的用户名"
+            android:textColor="#ffffff"
+            android:textColorHint="#d2d2d2" />
+
+        <EditText
+            android:id="@+id/iput_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:hint="请输入您的密码"
+            android:textColor="#ffffff"
+            android:textColorHint="#d2d2d2" />
+
+        <EditText
+            android:id="@+id/iput_hostserver"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:hint="请输入服务器地址"
+            android:textColor="#ffffff"
+            android:textColorHint="#d2d2d2" />
+
+        <EditText
+            android:id="@+id/iput_audioport"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:hint="请输入AudioPort，默认7078"
+            android:inputType="number"
+            android:textColor="#ffffff"
+            android:textColorHint="#d2d2d2" />
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/login"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="20dp"
+        android:background="@drawable/select_btn_blue"
+        android:text="登   陆"
+        android:textColor="#ffffff" />
+</RelativeLayout>

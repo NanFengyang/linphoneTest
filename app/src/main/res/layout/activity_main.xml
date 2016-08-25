@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/showusernaem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="hi!莫少雪"
+        android:textColor="#000000"
+        android:textSize="23sp" />
+
+    <Button
+        android:id="@+id/signle_phone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/select_btn_blue"
+        android:text="单语音拨号"
+        android:textColor="#ffffff" />
+
+    <Button
+        android:id="@+id/more_phone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/select_btn_blue"
+        android:text="多人语音聊天"
+        android:textColor="#ffffff" />
+
+</LinearLayout>
