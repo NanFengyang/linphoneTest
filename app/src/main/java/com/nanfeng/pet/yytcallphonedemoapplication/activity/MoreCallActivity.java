@@ -44,7 +44,10 @@ public class MoreCallActivity extends AppCompatActivity {
         mMoreCallAdapter = new MoreCallAdapter(mContext, mList);
         mListView.setAdapter(mMoreCallAdapter);
         startMoreCall();
-        mMoreCallAdapter.notifyDataSetChanged();
+    }
+
+    private void onCreatConference() {
+
     }
 
     private void startMoreCall() {
@@ -52,7 +55,7 @@ public class MoreCallActivity extends AppCompatActivity {
             @Override
             public void run() {
                 ToastUtils.showShort("开始拨打");
-                PhoneVoiceUtils.getInstance().startConferenceTo(mList);
+                PhoneVoiceUtils.getInstance().onCreart(mList);
             }
         }, 2000);
 

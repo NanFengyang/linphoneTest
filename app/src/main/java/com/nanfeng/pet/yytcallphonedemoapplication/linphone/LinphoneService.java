@@ -27,22 +27,11 @@ import org.linphone.core.Reason;
 /**
  * Created by 90Chris on 2015/7/1.
  */
-public class LinphoneService extends Service implements LinphoneCoreListener.LinphoneCallStateListener,
-        LinphoneCoreListener.LinphoneGlobalStateListener, LinphoneCoreListener.LinphoneRegistrationStateListener {
+public class LinphoneService extends Service {
 
     final String TAG = getClass().getSimpleName();
     private PendingIntent mkeepAlivePendingIntent;
     private static LinphoneService instance;
-    private static PhoneServiceCallBack mPhoneServiceCallBack;
-
-    /**
-     * 添加服务监听
-     *
-     * @param phoneServiceCallBack
-     */
-    public static void addCallBack(PhoneServiceCallBack phoneServiceCallBack) {
-        mPhoneServiceCallBack = phoneServiceCallBack;
-    }
 
     @Override
     public void onCreate() {
@@ -68,7 +57,6 @@ public class LinphoneService extends Service implements LinphoneCoreListener.Lin
      */
     public static LinphoneService instance() {
         if (isReady()) return instance;
-
         throw new RuntimeException("LinphoneService not instantiated yet");
     }
 
@@ -84,50 +72,13 @@ public class LinphoneService extends Service implements LinphoneCoreListener.Lin
         return null;
     }
 
-    @Override
-    public void callState(LinphoneCore linphoneCore, LinphoneCall linphoneCall, LinphoneCall.State state, String s) {
-        Log.e(TAG, "callState = " + state.toString());
-        if (state == LinphoneCall.State.IncomingReceived) {//有电话打进来
-            String str = "有电话打进来了：" + linphoneCall.getRemoteAddress().getPort() + "--" + linphoneCall.getRemoteAddress().getDisplayName();
-            Log.e(TAG, "callState = " + str);
-            ToastUtils.showLong(str);
-            callIncome(linphoneCore, linphoneCall);
-            if (null != mPhoneServiceCallBack) {
-                mPhoneServiceCallBack.incomingCall(linphoneCall);
-            }
-        }
-        if (state == LinphoneCall.State.Connected) {
-            if (null != mPhoneServiceCallBack) {
-                mPhoneServiceCallBack.callConnected();
-            }
-        }
-        if (state == LinphoneCall.State.CallEnd) {
-            if (null != mPhoneServiceCallBack) {
-                mPhoneServiceCallBack.callReleased();
-            }
-        }
-    }
-
-    @Override
-    public void globalState(LinphoneCore linphoneCore, LinphoneCore.GlobalState globalState, String s) {
-        Log.e(TAG, "globalState = " + globalState.toString());
-    }
-
-    @Override
-    public void registrationState(LinphoneCore linphoneCore, LinphoneProxyConfig linphoneProxyConfig, LinphoneCore.RegistrationState registrationState, String s) {
-        Log.e(TAG, "registrationState = " + registrationState.toString());
-        if (null != mPhoneServiceCallBack) {
-            mPhoneServiceCallBack.registrationState(registrationState);
-        }
-    }
-
     /**
      * 电话接听对话框
      *
      * @param linphoneCore
      * @param linphoneCall
      */
-    private void callIncome(final LinphoneCore linphoneCore, final LinphoneCall linphoneCall) {
+    public void callIncome(final LinphoneCore linphoneCore, final LinphoneCall linphoneCall) {
         PhoneVoiceUtils.getInstance().toggleSpeaker(true);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("来电：" + linphoneCall.getRemoteAddress().getUserName() + " port:" + linphoneCall.getRemoteAddress().getPort());
@@ -141,7 +92,7 @@ public class LinphoneService extends Service implements LinphoneCoreListener.Lin
                             Intent intent = new Intent(LinphoneService.this, SingleCallActivity.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             intent.putExtra("isCall", false);
-                            intent.putExtra("userName",linphoneCall.getRemoteAddress().getDisplayName());
+                            intent.putExtra("userName", linphoneCall.getRemoteAddress().getDisplayName());
                             startActivity(intent);
                         } catch (LinphoneCoreException e) {
                             e.printStackTrace();

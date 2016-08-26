@@ -21,7 +21,7 @@ public abstract class PhoneServiceCallBack {
      *
      * @param linphoneCall
      */
-    public void incomingCall(LinphoneCall linphoneCall) {
+    public void incomingCall(LinphoneCore linphoneCore, LinphoneCall linphoneCall, LinphoneCall.State state, String s) {
 
     }
 

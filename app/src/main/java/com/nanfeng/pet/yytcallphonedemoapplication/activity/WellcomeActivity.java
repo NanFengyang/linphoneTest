@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -11,6 +12,7 @@ import android.widget.ImageView;
 
 import com.nanfeng.pet.yytcallphonedemoapplication.MainActivity;
 import com.nanfeng.pet.yytcallphonedemoapplication.R;
+import com.nanfeng.pet.yytcallphonedemoapplication.linphone.LinphoneManager;
 import com.nanfeng.pet.yytcallphonedemoapplication.linphone.LinphoneService;
 import com.nanfeng.pet.yytcallphonedemoapplication.linphone.PhoneServiceCallBack;
 import com.nanfeng.pet.yytcallphonedemoapplication.linphone.PhoneVoiceUtils;
@@ -81,9 +83,10 @@ public class WellcomeActivity extends AppCompatActivity implements View.OnClickL
      * 登陆
      */
     private void login() {
-        LinphoneService.addCallBack(new PhoneServiceCallBack() {
+        LinphoneManager.addCallBack(new PhoneServiceCallBack() {
             @Override
             public void registrationState(LinphoneCore.RegistrationState registrationState) {
+                Log.i("LinphoneManager", "registrationState:" + registrationState.toString());
                 if ("RegistrationOk".equals(registrationState.toString())) {
                     onServiceReady();
                 }
@@ -93,7 +96,7 @@ public class WellcomeActivity extends AppCompatActivity implements View.OnClickL
             Utility.setUsername(userNameInput.getText().toString());
         }
         if (userPasswordInput.getText().toString().length() > 0) {
-            Utility.setPassword( userPasswordInput.getText().toString());
+            Utility.setPassword(userPasswordInput.getText().toString());
         }
         if (userHostInput.getText().toString().length() > 0) {
             Utility.setHost(userHostInput.getText().toString());

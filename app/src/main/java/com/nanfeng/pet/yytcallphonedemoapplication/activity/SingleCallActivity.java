@@ -8,6 +8,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.nanfeng.pet.yytcallphonedemoapplication.R;
+import com.nanfeng.pet.yytcallphonedemoapplication.linphone.LinphoneManager;
 import com.nanfeng.pet.yytcallphonedemoapplication.linphone.LinphoneService;
 import com.nanfeng.pet.yytcallphonedemoapplication.linphone.PhoneBean;
 import com.nanfeng.pet.yytcallphonedemoapplication.linphone.PhoneServiceCallBack;
@@ -54,7 +55,7 @@ public class SingleCallActivity extends AppCompatActivity implements View.OnClic
             username.setEnabled(true);
             bange.setText("拨打");
         }
-        LinphoneService.addCallBack(new PhoneServiceCallBack() {
+        LinphoneManager.addCallBack(new PhoneServiceCallBack() {
             @Override
             public void callConnected() {
                 bange.setText("挂断");

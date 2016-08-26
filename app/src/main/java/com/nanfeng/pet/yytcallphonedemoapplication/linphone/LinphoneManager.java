@@ -10,6 +10,7 @@ import android.content.res.Resources;
 import android.os.Build;
 
 import com.nanfeng.pet.yytcallphonedemoapplication.R;
+import com.nanfeng.pet.yytcallphonedemoapplication.utils.ToastUtils;
 
 import org.linphone.core.LinphoneAddress;
 import org.linphone.core.LinphoneCall;
@@ -23,6 +24,7 @@ import org.linphone.core.LinphoneCoreFactory;
 import org.linphone.core.LinphoneCoreListener;
 import org.linphone.core.LinphoneEvent;
 import org.linphone.core.LinphoneFriend;
+import org.linphone.core.LinphoneFriendList;
 import org.linphone.core.LinphoneInfoMessage;
 import org.linphone.core.LinphoneProxyConfig;
 import org.linphone.core.PublishState;
@@ -42,9 +44,9 @@ import java.util.TimerTask;
 /**
  * Created by 90Chris on 2015/7/1.
  */
-public class LinphoneManager implements LinphoneCoreListener.LinphoneListener {
-    final String TAG = "pengtao" + getClass().getSimpleName();
-
+public class LinphoneManager implements LinphoneCoreListener {
+    final String TAG = getClass().getSimpleName();
+    private static PhoneServiceCallBack mPhoneServiceCallBack;
     private static LinphoneManager instance;
     private LinphoneCore mLc;
 
@@ -58,11 +60,19 @@ public class LinphoneManager implements LinphoneCoreListener.LinphoneListener {
     private String mChatDatabaseFile = null;
     private String mErrorToneFile = null;
     private static boolean sExited;
-
     private Context mServiceContext;
     private Resources mR;
     private Timer mTimer;
     private BroadcastReceiver mKeepAliveReceiver = new KeepAliveReceiver();
+
+    /**
+     * 添加服务监听
+     *
+     * @param phoneServiceCallBack
+     */
+    public static void addCallBack(PhoneServiceCallBack phoneServiceCallBack) {
+        mPhoneServiceCallBack = phoneServiceCallBack;
+    }
 
     protected LinphoneManager(final Context c) {
         LinphoneCoreFactory.instance().setDebugMode(true, "MyCall");
@@ -128,10 +138,7 @@ public class LinphoneManager implements LinphoneCoreListener.LinphoneListener {
     private synchronized void startLibLinphone(Context c) {
         try {
             copyAssetsFromPackage();
-
             mLc = LinphoneCoreFactory.instance().createLinphoneCore(this, mLinphoneConfigFile, mLinphoneFactoryConfigFile, null, c);
-            mLc.addListener((LinphoneCoreListener) c);
-
             try {
                 initLiblinphone();
             } catch (LinphoneCoreException e) {
@@ -187,7 +194,6 @@ public class LinphoneManager implements LinphoneCoreListener.LinphoneListener {
         Log.d(TAG, "Migration to multi transport result = " + migrationResult);
 
         mLc.setNetworkReachable(true);
-
         mLc.enableEchoCancellation(true);//启用或禁用语音的回声消除，这个是利用降噪的
         IntentFilter lFilter = new IntentFilter(Intent.ACTION_SCREEN_ON);
         lFilter.addAction(Intent.ACTION_SCREEN_OFF);
@@ -266,11 +272,6 @@ public class LinphoneManager implements LinphoneCoreListener.LinphoneListener {
     }
 
     @Override
-    public void textReceived(LinphoneCore linphoneCore, LinphoneChatRoom linphoneChatRoom, LinphoneAddress linphoneAddress, String s) {
-        Log.e(TAG, "textReceived");
-    }
-
-    @Override
     public void dtmfReceived(LinphoneCore linphoneCore, LinphoneCall linphoneCall, int i) {
         Log.e(TAG, "dtmfReceived");
     }
@@ -343,12 +344,42 @@ public class LinphoneManager implements LinphoneCoreListener.LinphoneListener {
 
     @Override
     public void callState(LinphoneCore linphoneCore, LinphoneCall linphoneCall, LinphoneCall.State state, String s) {
-        Log.e(TAG, "callState");
+        Log.i(TAG, "callState" + state.toString() + "--String:" + s);
+        if (state == LinphoneCall.State.IncomingReceived) {//有电话打进来
+            String str = "linphoneCore:" + linphoneCore.isInConference() + "--linphoneCall:" + linphoneCall.isInConference();
+            android.util.Log.e(TAG, "callState = " + str);
+            ToastUtils.showLong(str);
+            if (linphoneCall.isInConference()) {
+                android.util.Log.i(TAG, "是会议 ，加入会议 = ");
+                linphoneCore.enterConference();
+            } else {
+                android.util.Log.i(TAG, "不是会议，连接通话 ");
+                LinphoneService.instance().callIncome(linphoneCore, linphoneCall);
+            }
+            if (null != mPhoneServiceCallBack) {
+                mPhoneServiceCallBack.incomingCall(linphoneCore, linphoneCall, state, s);
+            }
+        }
+        if (state == LinphoneCall.State.Connected) {
+            if (null != mPhoneServiceCallBack) {
+                mPhoneServiceCallBack.callConnected();
+            }
+        }
+        if (state == LinphoneCall.State.CallEnd) {
+            if (null != mPhoneServiceCallBack) {
+                mPhoneServiceCallBack.callReleased();
+            }
+        }
     }
 
     @Override
     public void isComposingReceived(LinphoneCore linphoneCore, LinphoneChatRoom linphoneChatRoom) {
         Log.e(TAG, "isComposingReceived");
+    }
+
+    @Override
+    public void ecCalibrationStatus(LinphoneCore linphoneCore, LinphoneCore.EcCalibratorStatus ecCalibratorStatus, int i, Object o) {
+        Log.e(TAG, "ecCalibrationStatus");
     }
 
     @Override
@@ -367,6 +398,16 @@ public class LinphoneManager implements LinphoneCoreListener.LinphoneListener {
     }
 
     @Override
+    public void friendListCreated(LinphoneCore linphoneCore, LinphoneFriendList linphoneFriendList) {
+        Log.e(TAG, "friendListCreated");
+    }
+
+    @Override
+    public void friendListRemoved(LinphoneCore linphoneCore, LinphoneFriendList linphoneFriendList) {
+        Log.e(TAG, "friendListRemoved");
+    }
+
+    @Override
     public void messageReceived(LinphoneCore linphoneCore, LinphoneChatRoom linphoneChatRoom, LinphoneChatMessage linphoneChatMessage) {
         Log.e(TAG, "messageReceived");
     }
@@ -379,6 +420,9 @@ public class LinphoneManager implements LinphoneCoreListener.LinphoneListener {
     @Override
     public void registrationState(LinphoneCore linphoneCore, LinphoneProxyConfig linphoneProxyConfig, LinphoneCore.RegistrationState registrationState, String s) {
         Log.e(TAG, "registrationState");
+        if (null != mPhoneServiceCallBack) {
+            mPhoneServiceCallBack.registrationState(registrationState);
+        }
     }
 
     @Override

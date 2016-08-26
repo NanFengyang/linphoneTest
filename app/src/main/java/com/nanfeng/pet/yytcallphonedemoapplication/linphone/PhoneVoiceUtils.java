@@ -6,6 +6,10 @@ import org.linphone.core.LinphoneAddress;
 import org.linphone.core.LinphoneAuthInfo;
 import org.linphone.core.LinphoneCall;
 import org.linphone.core.LinphoneCallParams;
+import org.linphone.core.LinphoneCallParamsImpl;
+import org.linphone.core.LinphoneConference;
+import org.linphone.core.LinphoneConferenceParams;
+import org.linphone.core.LinphoneConferenceParamsImpl;
 import org.linphone.core.LinphoneCore;
 import org.linphone.core.LinphoneCoreException;
 import org.linphone.core.LinphoneCoreFactory;
@@ -58,27 +62,22 @@ public class PhoneVoiceUtils {
      *
      * @param bean
      */
-    public LinphoneCall startSingleCallingTo(PhoneBean bean) {
-        LinphoneAddress lAddress;
-        LinphoneCall call = null;
+    public void startSingleCallingTo(PhoneBean bean) {
+        LinphoneAddress lAddress = null;
         try {
             lAddress = mLinphoneCore.interpretUrl(bean.userName + "@" + bean.host);
         } catch (LinphoneCoreException e) {
             e.printStackTrace();
             Log.i("startSingleCallingTo", " LinphoneCoreException0:" + e.toString());
-            return null;
         }
         lAddress.setDisplayName(bean.displayName);
-        LinphoneCallParams params = mLinphoneCore.createDefaultCallParameters();
-        params.setVideoEnabled(false);
+        LinphoneCallParams linphoneCallParams = mLinphoneCore.createCallParams(null);
         try {
-            call = mLinphoneCore.inviteAddressWithParams(lAddress, params);
+            mLinphoneCore.inviteAddressWithParams(lAddress, linphoneCallParams);
         } catch (LinphoneCoreException e) {
             e.printStackTrace();
             Log.i("startSingleCallingTo", " LinphoneCoreException1:" + e.toString());
         }
-
-        return call;
     }
 
     /**
@@ -86,9 +85,27 @@ public class PhoneVoiceUtils {
      */
     public void startConferenceTo(List<PhoneBean> list) {
         for (int i = 0; i < list.size(); i++) {
-            LinphoneCall call = startSingleCallingTo(list.get(i));
-            mLinphoneCore.addToConference(call);
+            startSingleCallingTo(list.get(i));
         }
+        mLinphoneCore.addAllToConference();
+    }
+
+    /**
+     * @param list
+     */
+    public void onCreart(List<PhoneBean> list) {
+        LinphoneConferenceParamsImpl llParams = new LinphoneConferenceParamsImpl(mLinphoneCore);
+        llParams.enableVideo(false);
+        LinphoneConference confre = mLinphoneCore.createConference(llParams);
+        Log.i("LinphoneManager", "创建会议:" + confre.toString() + "  ---getParticipants:" + confre.getParticipants().length);
+        mLinphoneCore.enterConference();
+        LinphoneAddress[] ii = confre.getParticipants();
+        Log.i("LinphoneManager", "getConferenceSize:" + mLinphoneCore.getConferenceSize());
+//        startConferenceTo(list);
+//        LinphoneAddress[] ll = confre.getParticipants();
+//        for (int i = 0; i < ll.length; i++) {
+//            Log.i("LinphoneConference", "LinphoneAddress:" + ll[i].getUserName());
+//        }
     }
 
     /**
@@ -114,7 +131,6 @@ public class PhoneVoiceUtils {
      */
     public void hangUp() {
         LinphoneCall currentCall = mLinphoneCore.getCurrentCall();
-
         if (currentCall != null) {
             mLinphoneCore.terminateCall(currentCall);
         } else if (mLinphoneCore.isInConference()) {
